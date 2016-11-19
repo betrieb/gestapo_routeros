@@ -2,7 +2,7 @@ import sqlite3
 db = sqlite3.connect('localStorage.sqlite3')
 db.execute('create table if not exists transfer_volume (host primary key unique, up, down)')
 
-def increase_volume(host, bytes_up, bytes_down):
+def increase_volume(host, bytes_up, bytes_down, time_stamp):
     try:
         cursor = db.cursor()
         cursor.execute('insert or ignore into transfer_volume values (?, 0, 0)', [host])
@@ -27,7 +27,7 @@ def print_stats():
 
 
 print_stats()
-increase_volume('localhost', 100, 200)
+increase_volume('localhost', 100, 200, '')
 print_stats()
-increase_volume('localhost', 10, 20)
+increase_volume('localhost', 10, 20, '')
 print_stats()
