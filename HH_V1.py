@@ -33,16 +33,25 @@ def wait_to_next_full_min(interval):
     time.sleep(sec_to_next_min)
 
 def run_logging_loop(IP, starttime=time.time(), interval=60):
-    now = dt.datetime.now()
     interval = float(interval)
     # Define a list of valid ip's
     ip_last_seg = xrange(1,255)
     ip_base_seg = '192.168.8.'
     ip_all_segs = [ip_base_seg+str(seg) for seg in ip_last_seg]
     while True:
-        data = []
-        pulled = urllib2.urlopen(urllib2.Request('http://'+IP+'/accounting/ip.cgi'))\
-            .read().rstrip().split('\n')
+        now = dt.datetime.now()
+        data     = []
+        all_ips  = []
+        total_up = 0.0
+        total_dn = 0.0
+        try:
+            pulled = urllib2.urlopen(urllib2.Request('http://'+IP+'/accounting/ip.cgi')).read().rstrip().split('\n')
+        except Exception as E:
+            print E
+            try:
+                pulled = urllib2.urlopen(urllib2.Request('http://'+IP+'/accounting/ip.cgi')).read().rstrip().split('\n')
+            except Exception as E:
+                print E
         for line in pulled:
             s = line.split(' ')
             if not s == ['']:
@@ -51,16 +60,30 @@ def run_logging_loop(IP, starttime=time.time(), interval=60):
                 ip_b = s[1]
                 if ip_a in ip_all_segs:
                     # This is traffic up
-                    i = int(ip_a.split('.')[-1])
-                    data.append([i, float(s[2]), 0.0])
+                    ip = int(ip_a.split('.')[-1])
+                    all_ips.append(ip)
+                    data.append([ip, float(s[2]), 0.0])
                 elif ip_b in ip_all_segs:
                     # This is traffic down
-                    i = int(ip_b.split('.')[-1])
-                    data.append([i, 0.0, float(s[2])])
-            for d in data:
-                if sum(d[1:3]) > 0.:
-                    print [ip_base_seg+str(int(d[0])), d[1], d[2], now.strftime('%Y-%m-%d %H:%M:%S')]
-                    persistence.increase_volume(ip_base_seg+str(int(d[0])), d[1], d[2], now.strftime('%Y-%m-%d %H:%M:%S'))
+                    ip = int(ip_b.split('.')[-1])
+                    all_ips.append(ip)
+                    data.append([ip, 0.0, float(s[2])])
+
+        for d in data:
+            all_ips.append(d[0])
+        ip_unique = list(set(all_ips))
+        aggregated = len(ip_unique)*[[0.0]*3]
+        for i_agg in range(len(ip_unique)):
+            aggregated[i_agg][0] = ip_unique[i_agg]
+            for i in xrange(len(data)):
+                if data[i][0] == ip_unique[i_agg]:
+                    aggregated[i_agg][1] += data[i][1]
+                    aggregated[i_agg][2] += data[i][2]
+                total_up += data[i][1]
+                total_dn += data[i][2]
+            print [ip_base_seg+str(ip_unique[i_agg]), aggregated[i_agg][1], aggregated[i_agg][2], now.strftime('%Y-%m-%d %H:%M:%S')]
+            persistence.increase_volume(ip_base_seg+str(ip_unique[i_agg]), aggregated[i_agg][1], aggregated[i_agg][2], now.strftime('%Y-%m-%d %H:%M:%S'))
+        persistence.increase_volume(ip_base_seg+str(0), total_up, total_dn, now.strftime('%Y-%m-%d %H:%M:%S'))
         time.sleep(interval - ((time.time() - starttime) % interval))
 
 if __name__ == '__main__':
