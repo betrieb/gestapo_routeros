@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Gestapo for RouterOS</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" />
+        <link rel="stylesheet" href="http://cdn.kendostatic.com/2015.1.408/styles/kendo.common.min.css" />
+        <link rel="stylesheet" href="http://cdn.kendostatic.com/2015.1.408/styles/kendo.common-bootstrap.min.css" />
+        <link rel="stylesheet" href="http://cdn.kendostatic.com/2015.1.408/styles/kendo.bootstrap.min.css" />
+        <link rel="stylesheet" href="http://cdn.kendostatic.com/2015.1.408/styles/kendo.dataviz.min.css" />
+        <link rel="stylesheet" href="http://cdn.kendostatic.com/2015.1.408/styles/kendo.dataviz.bootstrap.min.css" />
+
+        <script src="http://code.jquery.com/jquery-1.9.1.min.js"></script>
+        <!--<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.2.16/angular.js"></script>-->
+        <script type="text/javascript" src="http://code.angularjs.org/1.5.8/angular.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-router/0.3.1/angular-ui-router.js"></script>
+        <script src="http://cdn.kendostatic.com/2015.1.408/js/kendo.all.min.js"></script>
+        <script src="http://cdn.kendostatic.com/2015.1.408/js/kendo.timezones.min.js"></script>
+
+
+        <!--<link rel="stylesheet" href="styles.css" />-->
+
+        <!--[if lt IE 9]>
+        <script src="vendor/html5shiv.js"></script>
+        <script src="vendor/respond.min.js"></script>
+        <![endif]-->
+        <script type="text/javascript" >
+        angular.module('app', [])
+        .controller('statsController', function($http, $scope)
+        {
+            $http.get('/data')
+            .then(function(response) { 
+                $scope.data = response.data 
+                })
+            .catch(function(err) { alert(err) })
+        
+        })
+        .filter('data', function() {
+        return function(input, optional1, optional2) {
+            output = input;
+            kb = 1024;
+            mb = kb * 1024;
+            gb = mb * 1024;
+            if (input > gb)
+                output = (input / gb).toFixed(2) + ' GiB';
+            else if (input > mb)
+                output = (input / mb).toFixed(2) + ' MiB';
+            else
+                output = (input / kb).toFixed(2) + ' KiB';
+            return output;
+        }
+
+        });
+        </script>
+    </head>
+    <body ng-app="app">
+        <div id="example" class="container">
+            <section class="well">
+                <h2 class="ra-well-title">Getting started</h2>
+
+                <p>Blah blah</p>
+            </section>
+            <div class="bs-example" data-example-id="table-within-panel"> 
+                <div class="panel panel-default" ng-controller="statsController as ctrl">
+                    <div class="panel-heading">Total Usage</div> <div class="panel-body"> <p>Some default panel content here. Nulla vitae elit libero, a pharetra augue. Aenean lacinia bibendum nulla sed consectetur. Aenean eu leo quam. Pellentesque ornare sem lacinia quam venenatis vestibulum. Nullam id dolor id nibh ultricies vehicula ut id elit.</p> </div> 
+                <table class="table"> 
+                    <thead> <tr>  
+                        <th>Host</th> 
+                        <th class="text-right">Up</th> 
+                        <th class="text-right">Down</th>
+                        </tr> 
+                        </thead> <tbody> 
+                            <tr ng-repeat="item in data"> 
+                            <td>{{item.host}}</td>
+                            <td class="text-right">{{item.up | data}}</td>
+                            <td class="text-right">{{item.down | data}}</td> 
+                            </tr> 
+                        </tbody> 
+                </table> 
+            </div> 
+            </div>
+
+            <footer>Copyright &copy; 2016</footer>
+        </div>
+    </body>
+</html>
