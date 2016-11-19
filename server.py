@@ -14,4 +14,9 @@ class HelloWorld(object):
     def data(self):
         return persistence.get_all()
 
-cherrypy.quickstart(HelloWorld())
+#cherrypy.quickstart(HelloWorld())
+def start():
+    cherrypy.tree.mount(HelloWorld(), '', None)
+    cherrypy.config.update({'server.socket_host': '0.0.0.0',})
+    cherrypy.engine.signals.subscribe()
+    cherrypy.engine.start()
