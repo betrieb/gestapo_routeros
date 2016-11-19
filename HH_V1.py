@@ -3,6 +3,7 @@ import datetime as dt
 import numpy as np
 import urllib2
 import persistence
+import server
 
 # Logging interval in seconds
 LOG_INTERVAL = 60
