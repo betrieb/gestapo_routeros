@@ -5,9 +5,14 @@ def get_db():
     return  sqlite3.connect('localStorage.sqlite3')
 
 def init():
-    cursor = get_db().cursor()
+    db = get_db()
+    cursor = db.cursor()
     cursor.execute('create table if not exists transfer_volume (host, up, down, period datetime,\
     primary key(host, period))')
+    cursor.execute('create table if not exists alias (key primary key, value);')
+    #TODO: read dict from config
+    cursor.executemany('insert or replace into alias values(?, ?)', [('192.168.8.0', 'BigHouse'),('192.168.8.23', 'HH Pi')])
+    db.commit()
     cursor.close()
 
 def increase_volume(host, bytes_up, bytes_down, time_stamp):
@@ -49,13 +54,13 @@ def get_detail(limit=50):
     return query_db("select host, up, down, period from transfer_volume order by period desc limit ?;", [limit])
 
 def get_by_host():
-    return query_db("select host, sum(up) up, sum(down) down from transfer_volume group by host order by up + down desc;")
+    return query_db("select host, a.value alias, sum(up) up, sum(down) down from transfer_volume left join alias a on a.key = host group by host order by up + down desc;")
     
 def get_by_month():
-    return query_db("select host, sum(up) up, sum(down) down, strftime('%Y-%m', period) as month from transfer_volume group by month;")
+    return query_db("select host, a.value alias, sum(up) up, sum(down) down, strftime('%Y-%m', period) as month from transfer_volume left join alias a on a.key = host group by month;")
 
 def get_by_week():
-    return query_db("select host, sum(up) up, sum(down) down, strftime('%Y:%W', period) as week from transfer_volume group by week;")
+    return query_db("select host, a.value alias, sum(up) up, sum(down) down, strftime('%Y:%W', period) as week from transfer_volume left join alias a on a.key = host group by week;")
 
 
 def cursor_to_object_collection(cursor):
