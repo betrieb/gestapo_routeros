@@ -3,10 +3,27 @@ import datetime as dt
 import urllib2
 import persistence
 import server
+import warnings
+from ConfigParser import SafeConfigParser, NoOptionError, NoSectionError
 
-# Logging interval in seconds
-LOG_INTERVAL = 60
-MIKROTIK_IP     = '192.168.8.254'
+def read_settings(fn_ini_file):
+    config = SafeConfigParser()
+    config.read(fn_ini_file)
+    try:
+        MIKROTIK_IP  = config.get('Settings', 'Router_IP')
+    except (NoSectionError, NoOptionError):
+        MIKROTIK_IP   = '192.168.8.254'
+        warn_msg = 'Parameter \'Router_IP\' was not found under section \
+\'Settings\'. The default ip of \'%s\' was used.' %MIKROTIK_IP
+        warnings.warn(warn_msg)
+    try:
+        LOG_INTERVAL  = config.getint('Settings', 'Logging_interval_seconds')
+    except (NoSectionError, NoOptionError):
+        LOG_INTERVAL  = 60
+        warn_msg = 'Parameter \'Logging_interval_seconds\' was not provided \
+under section \'Settings\'. The default log interval of %is was used.' %LOG_INTERVAL
+        warnings.warn(warn_msg)
+    return MIKROTIK_IP, LOG_INTERVAL
 
 def roundTime(now=None, roundTo=LOG_INTERVAL):
     """Round a datetime object to any time laps in seconds
@@ -85,10 +102,12 @@ def run_logging_loop(IP, starttime=time.time(), interval=60):
         persistence.increase_volume(ip_base_seg+'0', total_up, total_dn, now.strftime('%Y-%m-%d %H:%M:%S'))
         time.sleep(interval - ((time.time() - starttime) % interval))
 
+MIKROTIK_IP, LOG_INTERVAL = read_settings('config.ini')
+
 if __name__ == '__main__':
     # Before executing the main loop wait until the current minutes is over
     server.start()
     wait_to_next_full_min(LOG_INTERVAL)
-    run_logging_loop(MIKROTIK_IP, starttime=time.time(), interval=LOG_INTERVAL)
+    run_logging_loop(MIKROTIK_IP, starttime=time.time(), interval=LOG_INTERVAL)        
 
 
