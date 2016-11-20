@@ -25,11 +25,7 @@ under section \'Settings\'. The default log interval of %is was used.' %LOG_INTE
         warnings.warn(warn_msg)
     return MIKROTIK_IP, LOG_INTERVAL
 
-# Logging interval in seconds
-LOG_INTERVAL = 60
-MIKROTIK_IP     = '192.168.8.254'
-
-def roundTime(now=None, roundTo=LOG_INTERVAL):
+def roundTime(roundTo, now=None):
     """Round a datetime object to any time laps in seconds
     dt : datetime.datetime object, default now.
     roundTo : Closest number of seconds to round to, default 1 minute.
@@ -38,19 +34,16 @@ def roundTime(now=None, roundTo=LOG_INTERVAL):
     if now == None: now = dt.datetime.now()
     seconds = (now.replace(tzinfo=None) - now.min).seconds
     rounding = (seconds+roundTo/2) // roundTo * roundTo
-    if now.second > roundTo/2:
+    if now.second > roundTo/2.:
         return now + dt.timedelta(0,rounding-seconds,-now.microsecond) - dt.timedelta(seconds=roundTo)
     else:
         return now + dt.timedelta(0,rounding-seconds,-now.microsecond)
 
 def wait_to_next_full_min(interval):
-    previous_min    = roundTime(now=None, roundTo=60)
-#    print 'previous_min', previous_min
+    previous_min    = roundTime(interval, now=None)
     time_now        = dt.datetime.now()
-#    print 'time_now', time_now
-#    print 'time_now-previous_min).total_seconds()', (time_now-previous_min).total_seconds()
     sec_to_next_min = interval - (time_now-previous_min).total_seconds()
-    print 'Waiting %0.2f seconds until next full min to start counting..' %sec_to_next_min
+    print 'Waiting %0.2f seconds for the next logging interval' %sec_to_next_min
     time.sleep(sec_to_next_min)
 
 def run_logging_loop(IP, starttime=time.time(), interval=60):
@@ -59,7 +52,6 @@ def run_logging_loop(IP, starttime=time.time(), interval=60):
     ip_last_seg = xrange(1,255)
     ip_base_seg = '192.168.8.'
     ip_all_segs = [ip_base_seg+str(seg) for seg in ip_last_seg]
-
     while True:
         now = dt.datetime.now()
         data     = []
@@ -104,7 +96,7 @@ def run_logging_loop(IP, starttime=time.time(), interval=60):
                 total_dn += data[i][2]
             print [ip_base_seg+str(ip_unique[i_agg]), aggregated[i_agg][1], aggregated[i_agg][2], now.strftime('%Y-%m-%d %H:%M:00')]
             persistence.increase_volume(ip_base_seg+str(ip_unique[i_agg]), aggregated[i_agg][1], aggregated[i_agg][2], now.strftime('%Y-%m-%d %H:%M:00'))
-        persistence.increase_volume(ip_base_seg+'0', total_up, total_dn, now.strftime('%Y-%m-%d %H:%M:%S'))
+        persistence.increase_volume(ip_base_seg+'0', total_up, total_dn, now.strftime('%Y-%m-%d %H:%M:00'))
         time.sleep(interval - ((time.time() - starttime) % interval))
         #end main loop here
 
