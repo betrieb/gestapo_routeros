@@ -52,6 +52,7 @@ def run_logging_loop(IP, starttime=time.time(), interval=60):
                 pulled = urllib2.urlopen(urllib2.Request('http://'+IP+'/accounting/ip.cgi')).read().rstrip().split('\n')
             except Exception as E:
                 print E
+                pulled = ['']
         for line in pulled:
             s = line.split(' ')
             if not s == ['']:
@@ -68,10 +69,8 @@ def run_logging_loop(IP, starttime=time.time(), interval=60):
                     ip = int(ip_b.split('.')[-1])
                     all_ips.append(ip)
                     data.append([ip, 0.0, float(s[2])])
-
-        for d in data:
-            all_ips.append(d[0])
-        ip_unique = list(set(all_ips))
+        # Aggregate the data for each IP address
+        ip_unique  = list(set(all_ips))
         aggregated = len(ip_unique)*[[0.0]*3]
         for i_agg in range(len(ip_unique)):
             aggregated[i_agg][0] = ip_unique[i_agg]
@@ -81,9 +80,9 @@ def run_logging_loop(IP, starttime=time.time(), interval=60):
                     aggregated[i_agg][2] += data[i][2]
                 total_up += data[i][1]
                 total_dn += data[i][2]
-            print [ip_base_seg+str(ip_unique[i_agg]), aggregated[i_agg][1], aggregated[i_agg][2], now.strftime('%Y-%m-%d %H:%M:%S')]
-            persistence.increase_volume(ip_base_seg+str(ip_unique[i_agg]), aggregated[i_agg][1], aggregated[i_agg][2], now.strftime('%Y-%m-%d %H:%M:%S'))
-        persistence.increase_volume(ip_base_seg+str(0), total_up, total_dn, now.strftime('%Y-%m-%d %H:%M:%S'))
+            print [ip_base_seg+str(ip_unique[i_agg]), aggregated[i_agg][1], aggregated[i_agg][2], now.strftime('%Y-%m-%d %H:%M:00')]
+            persistence.increase_volume(ip_base_seg+str(ip_unique[i_agg]), aggregated[i_agg][1], aggregated[i_agg][2], now.strftime('%Y-%m-%d %H:%M:00'))
+        persistence.increase_volume(ip_base_seg+'0', total_up, total_dn, now.strftime('%Y-%m-%d %H:%M:%S'))
         time.sleep(interval - ((time.time() - starttime) % interval))
 
 if __name__ == '__main__':
