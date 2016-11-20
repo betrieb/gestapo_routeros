@@ -36,12 +36,12 @@ class HelloWorld(object):
     def html(self):
         return """<html>
         <head>
-                <title>CherryPy static example</title>
+                <title>CherryPy static</title>
                 <link rel="stylesheet" type="text/css" href="css/style.css" type="text/css"></link>
                 <script type="application/javascript" src="js/some.js"></script>
         </head>
         <body>
-        <p>Static example</p>
+        <p>Static content</p>
         </body>
         </html>"""
 
@@ -58,6 +58,9 @@ def start():
     #cherrypy.config.update(conf)
     cherrypy.engine.signals.subscribe()
     cherrypy.engine.start()
+
+def stop():
+    cherrypy.engine.stop()
 
 if __name__ == '__main__':
     start()
