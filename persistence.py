@@ -1,5 +1,6 @@
 import sqlite3
 from datetime import datetime
+import config_reader 
 
 def get_db():
     return  sqlite3.connect('localStorage.sqlite3')
@@ -11,7 +12,7 @@ def init():
     primary key(host, period))')
     cursor.execute('create table if not exists alias (key primary key, value);')
     #TODO: read dict from config
-    cursor.executemany('insert or replace into alias values(?, ?)', [('192.168.8.0', 'BigHouse'),('192.168.8.23', 'HH Pi')])
+    cursor.executemany('insert or replace into alias values(?, ?)', config_reader.read_ip_user_names()) # [('192.168.8.0', 'BigHouse'),('192.168.8.23', 'HH Pi')])
     db.commit()
     cursor.close()
 
