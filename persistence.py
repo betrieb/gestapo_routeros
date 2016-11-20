@@ -45,11 +45,11 @@ def query_db(sql, args=[]):
         if cursor:
             cursor.close()
 
-def get_detail(limit=100):
-    return query_db("select host, up, down, period from transfer_volume limit ?;", [limit])
+def get_detail(limit=50):
+    return query_db("select host, up, down, period from transfer_volume order by period desc limit ?;", [limit])
 
 def get_by_host():
-    return query_db("select host, sum(up) up, sum(down) down from transfer_volume group by host;")
+    return query_db("select host, sum(up) up, sum(down) down from transfer_volume group by host order by up + down desc;")
     
 def get_by_month():
     return query_db("select host, sum(up) up, sum(down) down, strftime('%Y-%m', period) as month from transfer_volume group by month;")
