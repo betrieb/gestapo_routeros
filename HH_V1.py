@@ -4,6 +4,7 @@ import urllib2
 import persistence
 import server
 
+
 # Logging interval in seconds
 LOG_INTERVAL = 60
 MIKROTIK_IP     = '192.168.8.254'
@@ -29,7 +30,7 @@ def wait_to_next_full_min(interval):
 #    print 'time_now', time_now
 #    print 'time_now-previous_min).total_seconds()', (time_now-previous_min).total_seconds()
     sec_to_next_min = interval - (time_now-previous_min).total_seconds()
-    print 'Waiting %0.2f seconds unitl next full min to start counting..' %sec_to_next_min
+    print 'Waiting %0.2f seconds until next full min to start counting..' %sec_to_next_min
     time.sleep(sec_to_next_min)
 
 def run_logging_loop(IP, starttime=time.time(), interval=60):
@@ -38,6 +39,7 @@ def run_logging_loop(IP, starttime=time.time(), interval=60):
     ip_last_seg = xrange(1,255)
     ip_base_seg = '192.168.8.'
     ip_all_segs = [ip_base_seg+str(seg) for seg in ip_last_seg]
+
     while True:
         now = dt.datetime.now()
         data     = []
@@ -84,11 +86,15 @@ def run_logging_loop(IP, starttime=time.time(), interval=60):
             persistence.increase_volume(ip_base_seg+str(ip_unique[i_agg]), aggregated[i_agg][1], aggregated[i_agg][2], now.strftime('%Y-%m-%d %H:%M:00'))
         persistence.increase_volume(ip_base_seg+'0', total_up, total_dn, now.strftime('%Y-%m-%d %H:%M:%S'))
         time.sleep(interval - ((time.time() - starttime) % interval))
+        #end main loop here
 
 if __name__ == '__main__':
-    # Before executing the main loop wait until the current minutes is over
-    server.start()
-    wait_to_next_full_min(LOG_INTERVAL)
-    run_logging_loop(MIKROTIK_IP, starttime=time.time(), interval=LOG_INTERVAL)
-
+    try:
+        # Before executing the main loop wait until the current minutes is over
+        server.start()
+        wait_to_next_full_min(LOG_INTERVAL)
+        run_logging_loop(MIKROTIK_IP, starttime=time.time(), interval=LOG_INTERVAL)
+    except KeyboardInterrupt as E:
+        print 'received Ctrl+C; stopping'
+        server.stop()
 
