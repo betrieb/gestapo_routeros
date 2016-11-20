@@ -28,13 +28,35 @@
         angular.module('app', [])
         .controller('statsController', function($http, $scope)
         {
-            $http.get('/data')
-            .then(function(response) { 
-                $scope.data = response.data 
-                })
-            .catch(function(err) { alert(err) })
-        
-        })
+            $scope.fetch = function() {
+                $http.get('/detail')
+                .then(function(response) { 
+                    $scope.detail = response.data 
+                    })
+                .catch(function(err) { 
+                    alert(err.statusText) });
+                $http.get('/weekly')
+                .then(function(response) { 
+                    $scope.weekly = response.data 
+                    })
+                .catch(function(err) { 
+                    alert(err.statusText) });
+                $http.get('/monthly')
+                .then(function(response) { 
+                    $scope.monthly = response.data 
+                    })
+                .catch(function(err) { 
+                    alert(err.statusText) });
+                $http.get('/total')
+                .then(function(response) { 
+                    $scope.total = response.data 
+                    })
+                .catch(function(err) { 
+                    alert(err.statusText) })
+            }
+            $scope.fetch();
+        }
+        )
         .filter('data', function() {
         return function(input, optional1, optional2) {
             output = input;
@@ -60,9 +82,13 @@
 
                 <p>Blah blah</p>
             </section>
-            <div class="bs-example" data-example-id="table-within-panel"> 
-                <div class="panel panel-default" ng-controller="statsController as ctrl">
-                    <div class="panel-heading">Total Usage</div> <div class="panel-body"> <p>Some default panel content here. Nulla vitae elit libero, a pharetra augue. Aenean lacinia bibendum nulla sed consectetur. Aenean eu leo quam. Pellentesque ornare sem lacinia quam venenatis vestibulum. Nullam id dolor id nibh ultricies vehicula ut id elit.</p> </div> 
+            <section ng-controller="statsController as ctrl">
+            <div class="bs-example" > 
+                <input type="button" class="btn btn-small btn-default" value="Refresh" ng-click="fetch()"/>
+                <div class="panel panel-default" >
+                   <div class="panel-heading">Total Usage </div> <div class="panel-body"> 
+                        <p></p> 
+                    </div> 
                 <table class="table"> 
                     <thead> <tr>  
                         <th>Host</th> 
@@ -70,15 +96,85 @@
                         <th class="text-right">Down</th>
                         </tr> 
                         </thead> <tbody> 
-                            <tr ng-repeat="item in data"> 
+                            <tr ng-repeat="item in total"> 
                             <td>{{item.host}}</td>
                             <td class="text-right">{{item.up | data}}</td>
                             <td class="text-right">{{item.down | data}}</td> 
                             </tr> 
                         </tbody> 
-                </table> 
-            </div> 
+                    </table> 
+                </div> 
             </div>
+            <div class="bs-example" > 
+                <div class="panel panel-default" >
+                   <div class="panel-heading">Weekly Usage </div> <div class="panel-body"> 
+                        <p></p> 
+                    </div> 
+                <table class="table"> 
+                    <thead> <tr>  
+                        <th>Host</th> 
+                        <th>Week</th> 
+                        <th class="text-right">Up</th> 
+                        <th class="text-right">Down</th>
+                        </tr> 
+                        </thead> <tbody> 
+                            <tr ng-repeat="item in weekly"> 
+                            <td>{{item.host}}</td>
+                            <td>{{item.week}}</td>
+                            <td class="text-right">{{item.up | data}}</td>
+                            <td class="text-right">{{item.down | data}}</td> 
+                            </tr> 
+                        </tbody> 
+                    </table> 
+                </div> 
+            </div>
+            <div class="bs-example" > 
+                <div class="panel panel-default" >
+                    <div class="panel-heading">Monthly Usage </div> <div class="panel-body"> 
+                        <p></p> 
+                    </div> 
+                <table class="table"> 
+                    <thead> <tr>  
+                        <th>Host</th> 
+                        <th>Month</th> 
+                        <th class="text-right">Up</th> 
+                        <th class="text-right">Down</th>
+                        </tr> 
+                        </thead> <tbody> 
+                            <tr ng-repeat="item in monthly"> 
+                            <td>{{item.host}}</td>
+                            <td>{{item.month}}</td>
+                            <td class="text-right">{{item.up | data}}</td>
+                            <td class="text-right">{{item.down | data}}</td> 
+                            </tr> 
+                        </tbody> 
+                    </table> 
+                </div> 
+            </div>
+            <div class="bs-example" > 
+                <div class="panel panel-default" >
+                    <div class="panel-heading">Detail Usage </div> <div class="panel-body"> 
+                        <p></p> 
+                    </div> 
+                <table class="table"> 
+                    <thead> <tr>  
+                        <th>Host</th> 
+                        <th>Period</th>
+                        <th class="text-right">Up</th> 
+                        <th class="text-right">Down</th>
+                        </tr> 
+                        </thead> <tbody> 
+                            <tr ng-repeat="item in detail"> 
+                            <td>{{item.host}}</td>
+                            <td>{{item.period}}</td>
+                            <td class="text-right">{{item.up | data}}</td>
+                            <td class="text-right">{{item.down | data}}</td>  
+                            </tr> 
+                        </tbody> 
+                    </table> 
+                </div> 
+            </div>
+            </section>
 
             <footer>Copyright &copy; 2016</footer>
         </div>

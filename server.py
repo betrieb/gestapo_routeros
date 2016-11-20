@@ -11,10 +11,26 @@ class HelloWorld(object):
         # return "Running!"
         raise cherrypy.HTTPRedirect("/html/index.html")
 
-    @tools.jsonify()
     @expose
-    def data(self):
-        return persistence.get_all()
+    @tools.jsonify()
+    def detail(self):
+        return persistence.get_detail()
+    
+    @expose
+    @tools.jsonify()
+    def weekly(self):
+        return persistence.get_by_week()
+
+    @expose
+    @tools.jsonify()
+    def monthly(self):
+        return persistence.get_by_month()
+
+    @expose
+    @tools.jsonify()
+    def total(self):
+        return persistence.get_by_host()
+
 
     @expose
     def html(self):
