@@ -55,13 +55,16 @@ def get_detail(limit=50):
     return query_db("select host, up, down, period from transfer_volume order by period desc limit ?;", [limit])
 
 def get_by_host():
-    return query_db("select host, a.value alias, sum(up) up, sum(down) down from transfer_volume left join alias a on a.key = host group by host order by up + down desc;")
+    return query_db("select host, a.value alias, sum(up) up, sum(down) down from transfer_volume \
+    left join alias a on a.key = host group by host order by up + down desc;")
     
 def get_by_month():
-    return query_db("select host, a.value alias, sum(up) up, sum(down) down, strftime('%Y-%m', period) as month from transfer_volume left join alias a on a.key = host group by host, month;")
+    return query_db("select host, a.value alias, sum(up) up, sum(down) down, strftime('%Y-%m', period) as month from transfer_volume \
+    left join alias a on a.key = host group by host, month order by month desc, up + down desc;")
 
 def get_by_week():
-    return query_db("select host, a.value alias, sum(up) up, sum(down) down, strftime('%Y:%W', period) as week from transfer_volume left join alias a on a.key = host group by host, week;")
+    return query_db("select host, a.value alias, sum(up) up, sum(down) down, strftime('%Y:%W', period) as week from transfer_volume \
+    left join alias a on a.key = host group by host, week order by week desc, up + down desc;")
 
 
 def cursor_to_object_collection(cursor):
