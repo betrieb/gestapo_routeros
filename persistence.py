@@ -66,7 +66,6 @@ def get_by_week():
     return query_db("select host, a.value alias, sum(up) up, sum(down) down, strftime('%Y:%W', period) as week from transfer_volume \
     left join alias a on a.key = host group by host, week order by week desc, up + down desc;")
 
-
 def cursor_to_object_collection(cursor):
     output = []
     queryResult = cursor.fetchall()
